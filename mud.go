@@ -20,20 +20,36 @@ package mud
 import (
 	"github.com/mjolnir-engine/engine"
 	"github.com/mjolnir-engine/mud/data_sources"
+	"github.com/rs/zerolog"
 )
 
-type Plugin struct{}
+type Mud struct {
+	Engine *engine.Engine
+	config *Configuration
+	logger zerolog.Logger
+	portal Portal
+}
 
-func (p *Plugin) Name() string {
+func (p *Mud) Name() string {
 	return "mud"
 }
 
-func (p *Plugin) Start(engine *engine.Engine) error {
-	engine.RegisterDataSource(data_sources.CreateAccountsDataSource(engine))
+func (p *Mud) Start(e *engine.Engine) error {
+	p.logger = e.Logger().With().Str("plugin", p.Name()).Logger()
+	e.RegisterDataSource(data_sources.CreateAccountsDataSource(e))
+
+	p.Engine = e
 
 	return nil
 }
 
-func (p *Plugin) Stop(engine *engine.Engine) error {
+func (p *Mud) Stop() error {
 	return nil
+}
+
+// New creates a new instance of the Mud plugin.
+func New(config *Configuration) *Mud {
+	return &Mud{
+		config: config,
+	}
 }

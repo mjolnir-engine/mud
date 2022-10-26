@@ -17,14 +17,7 @@
 
 package mud
 
-import (
-	"github.com/mjolnir-engine/engine/uid"
-)
-
-type Account struct {
-	Id             uid.UID `bson:"_id"`
-	Username       string
-	Email          string
-	HashedPassword string
-	Controller     string `bson:"-"`
+type Portal interface {
+	Start()
+	Stop()
 }

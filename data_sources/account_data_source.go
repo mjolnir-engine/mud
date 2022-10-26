@@ -17,7 +17,9 @@
 
 package data_sources
 
-import "github.com/mjolnir-engine/engine"
+import (
+	"github.com/mjolnir-engine/engine"
+)
 
 // CreateAccountsDataSource creates the accounts data source.
 func CreateAccountsDataSource(e *engine.Engine) engine.DataSource {
