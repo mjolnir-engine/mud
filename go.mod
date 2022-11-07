@@ -5,6 +5,7 @@ go 1.19
 replace github.com/mjolnir-engine/engine => ../engine
 
 require (
+	github.com/charmbracelet/lipgloss v0.6.0
 	github.com/mjolnir-engine/engine v0.0.0-00010101000000-000000000000
 	github.com/rs/zerolog v1.27.0
 	github.com/stretchr/testify v1.7.5
@@ -16,12 +17,17 @@ require (
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
+	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
+	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
+	github.com/muesli/reflow v0.2.1-0.20210115123740-9e1d0d53df68 // indirect
+	github.com/muesli/termenv v0.11.1-0.20220204035834-5ac8409525e0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/rueian/rueidis v0.0.78 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.1 // indirect
