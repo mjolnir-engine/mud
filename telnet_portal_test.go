@@ -19,48 +19,42 @@ package mud
 
 import (
 	"github.com/mjolnir-engine/engine"
-	"github.com/mjolnir-engine/mud/data_sources"
-	"github.com/rs/zerolog"
+	engineTesting "github.com/mjolnir-engine/engine/testing"
+	"github.com/stretchr/testify/assert"
+	"net"
+	"testing"
 )
 
-type Mud struct {
-	Engine *engine.Engine
-	config *Configuration
-	logger zerolog.Logger
-	portal Portal
-}
+func TestTelnetPortal_CreatesListener(t *testing.T) {
+	e := engineTesting.Setup(func(e *engine.Engine) {
+		e.RegisterPlugin(New(&Configuration{
+			Telnet: &TelnetConfiguration{
+				Host: "localhost",
+				Port: 4000,
+			},
+		}))
+	}, "telnet")
+	defer e.Stop()
 
-func (m *Mud) Name() string {
-	return "mud"
-}
+	connected := make(chan bool)
 
-func (m *Mud) Init(e *engine.Engine) error {
-	m.Engine = e
+	go func() {
+		con, err := net.Dial("tcp", "localhost:4000")
+		defer func() { _ = con.Close() }()
 
-	e.RegisterService("telnet")
+		if err != nil {
+			t.Error(err)
+		}
 
-	return nil
-}
+		if con == nil {
+			t.Error("Connection is nil")
+		}
 
-func (m *Mud) Start(e *engine.Engine) error {
-	m.logger = e.Logger().With().Str("plugin", m.Name()).Logger()
-	e.RegisterDataSource(data_sources.CreateAccountsDataSource(e))
+		buf := make([]byte, 1024)
 
-	if e.GetService() == "telnet" {
-		m.portal = newTelnetPortal(m)
-		m.portal.Start()
-	}
+		_, err = con.Read(buf)
+		connected <- true
+	}()
 
-	return nil
-}
-
-func (m *Mud) Stop(e *engine.Engine) error {
-	return nil
-}
-
-// New creates a new instance of the Mud plugin.
-func New(config *Configuration) *Mud {
-	return &Mud{
-		config: config,
-	}
+	assert.True(t, <-connected)
 }

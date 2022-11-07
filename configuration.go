@@ -17,50 +17,6 @@
 
 package mud
 
-import (
-	"github.com/mjolnir-engine/engine"
-	"github.com/mjolnir-engine/mud/data_sources"
-	"github.com/rs/zerolog"
-)
-
-type Mud struct {
-	Engine *engine.Engine
-	config *Configuration
-	logger zerolog.Logger
-	portal Portal
-}
-
-func (m *Mud) Name() string {
-	return "mud"
-}
-
-func (m *Mud) Init(e *engine.Engine) error {
-	m.Engine = e
-
-	e.RegisterService("telnet")
-
-	return nil
-}
-
-func (m *Mud) Start(e *engine.Engine) error {
-	m.logger = e.Logger().With().Str("plugin", m.Name()).Logger()
-	e.RegisterDataSource(data_sources.CreateAccountsDataSource(e))
-
-	if e.GetService() == "telnet" {
-		m.portal = newTelnetPortal(m)
-		m.portal.Start()
-	}
-
-	return nil
-}
-
-func (m *Mud) Stop(e *engine.Engine) error {
-	return nil
-}
-
-// New creates a new instance of the Mud plugin.
-func New(config *Configuration) *Mud {
-	return &Mud{
-		config: config,
-	}
+type Configuration struct {
+	Telnet *TelnetConfiguration
 }

@@ -19,6 +19,7 @@ package mud
 
 import (
 	"fmt"
+	engineEvents "github.com/mjolnir-engine/engine/events"
 	"github.com/mjolnir-engine/engine/uid"
 	"github.com/rs/zerolog"
 	"net"
@@ -33,6 +34,7 @@ type telnetConnection struct {
 	id     uid.UID
 	logger zerolog.Logger
 	conn   net.Conn
+	portal *telnetPortal
 }
 
 func newTelnetConnection(p *telnetPortal, conn net.Conn) *telnetConnection {
@@ -42,12 +44,13 @@ func newTelnetConnection(p *telnetPortal, conn net.Conn) *telnetConnection {
 		id:     id,
 		logger: p.logger.With().Str("component", "telnet_connection").Str("id", (string)(id)).Logger(),
 		conn:   conn,
+		portal: p,
 	}
 }
 
 func (tc *telnetConnection) start() {
-	tc.logger.Debug().Msg("starting connection")
-	_, err := tc.conn.Write([]byte("Mjolnir MUD Engine\n"))
+	tc.logger.Debug().Msg("starting")
+	_, err := tc.conn.Write([]byte("Mjolnir MUD Engine\r\n"))
 
 	if err != nil {
 		tc.logger.Fatal().Err(err).Msg("failed to write to connection")
@@ -59,7 +62,7 @@ func (tc *telnetConnection) start() {
 		for {
 			n, err := tc.conn.Read(buf)
 			if err != nil {
-				tc.logger.Fatal().Err(err).Msg("failed to read from connection")
+				tc.logger.Warn().Err(err).Msg("failed to read from connection")
 				tc.stop()
 				return
 			}
@@ -67,6 +70,15 @@ func (tc *telnetConnection) start() {
 			tc.logger.Debug().Msgf("read %d bytes", n)
 		}
 	}()
+
+	err = tc.portal.mud.Engine.Publish(engineEvents.SessionStartEvent{
+		Id: tc.id,
+	})
+
+	if err != nil {
+		tc.logger.Fatal().Err(err).Msg("failed to publish session start event")
+		tc.stop()
+	}
 }
 
 func (tc *telnetConnection) stop() {
