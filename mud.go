@@ -24,10 +24,12 @@ import (
 )
 
 type Mud struct {
-	Engine *engine.Engine
-	config *Configuration
-	logger zerolog.Logger
-	portal Portal
+	Engine           *engine.Engine
+	config           *Configuration
+	logger           zerolog.Logger
+	portal           Portal
+	templateRegistry *templateRegistry
+	themeRegistry    *themeRegistry
 }
 
 func (m *Mud) Name() string {
@@ -36,6 +38,9 @@ func (m *Mud) Name() string {
 
 func (m *Mud) Init(e *engine.Engine) error {
 	m.Engine = e
+	m.logger = e.Logger().With().Str("plugin", m.Name()).Logger()
+	m.templateRegistry = newTemplateRegistry(m)
+	m.themeRegistry = newThemeRegistry(m)
 
 	e.RegisterService("telnet")
 
@@ -43,7 +48,6 @@ func (m *Mud) Init(e *engine.Engine) error {
 }
 
 func (m *Mud) Start(e *engine.Engine) error {
-	m.logger = e.Logger().With().Str("plugin", m.Name()).Logger()
 	e.RegisterDataSource(data_sources.CreateAccountsDataSource(e))
 
 	if e.GetService() == "telnet" {

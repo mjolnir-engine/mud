@@ -18,26 +18,49 @@
 package mud
 
 import (
-	"github.com/mjolnir-engine/engine"
-	engineTesting "github.com/mjolnir-engine/engine/testing"
-	"testing"
+	"github.com/mjolnir-engine/mud/errors"
+	"github.com/rs/zerolog"
 )
 
-func testSetup(t *testing.T, cb func(m *Mud, e *engine.Engine)) (*Mud, *engine.Engine) {
-	var m *Mud
+type themeRegistry struct {
+	themes map[string]Theme
+	mud    *Mud
+	logger zerolog.Logger
+}
 
-	e := engineTesting.Setup(func(e *engine.Engine) {
-		m = New(&Configuration{
-			Telnet: &TelnetConfiguration{
-				Host: "localhost",
-				Port: 4000,
-			},
-		})
+func newThemeRegistry(mud *Mud) *themeRegistry {
+	return &themeRegistry{
+		themes: make(map[string]Theme),
+		mud:    mud,
+		logger: mud.logger.With().Str("component", "themeRegistry").Logger(),
+	}
+}
 
-		e.RegisterPlugin(m)
+func (r *themeRegistry) register(theme Theme) {
+	r.logger.Info().Str("theme", theme.Name()).Msg("registering theme")
+	r.themes[theme.Name()] = theme
+}
 
-		cb(m, e)
-	}, "telnet")
+func (r *themeRegistry) get(name string) (Theme, error) {
+	r.logger.Debug().Str("theme", name).Msg("getting theme")
+	theme, ok := r.themes[name]
 
-	return m, e
+	if !ok {
+		return nil, errors.ThemeNotFoundError{
+			Name: name,
+		}
+	}
+
+	return theme, nil
+}
+
+// RegisterTheme registers a theme with the theme registry. If a theme with the same name already exists, it will be
+// overwritten.
+func (m *Mud) RegisterTheme(theme Theme) {
+	m.themeRegistry.register(theme)
+}
+
+// GetTheme returns a theme from the theme registry. If the theme does not exist, an error is returned.
+func (m *Mud) GetTheme(name string) (Theme, error) {
+	return m.themeRegistry.get(name)
 }

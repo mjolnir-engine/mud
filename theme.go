@@ -25,5 +25,5 @@ import "github.com/charmbracelet/lipgloss"
 // - command - the style used to render text that represent commands (e.g. "look", "go north", etc.)
 type Theme interface {
 	Name() string
-	GetStyleFor(name string) lipgloss.Style
+	GetStyle(name string) lipgloss.Style
 }

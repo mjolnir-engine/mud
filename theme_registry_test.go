@@ -18,26 +18,31 @@
 package mud
 
 import (
+	"github.com/charmbracelet/lipgloss"
 	"github.com/mjolnir-engine/engine"
-	engineTesting "github.com/mjolnir-engine/engine/testing"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
-func testSetup(t *testing.T, cb func(m *Mud, e *engine.Engine)) (*Mud, *engine.Engine) {
-	var m *Mud
+type testTheme struct{}
 
-	e := engineTesting.Setup(func(e *engine.Engine) {
-		m = New(&Configuration{
-			Telnet: &TelnetConfiguration{
-				Host: "localhost",
-				Port: 4000,
-			},
-		})
+func (t *testTheme) Name() string {
+	return "test"
+}
 
-		e.RegisterPlugin(m)
+func (t *testTheme) GetStyle(name string) lipgloss.Style {
+	return lipgloss.NewStyle()
+}
 
-		cb(m, e)
-	}, "telnet")
+func TestMud_RegisterThemeAndGetTheme(t *testing.T) {
+	m, e := testSetup(t, func(m *Mud, e *engine.Engine) {
+		m.RegisterTheme(&testTheme{})
+	})
+	defer e.Stop()
 
-	return m, e
+	theme, err := m.GetTheme("test")
+
+	assert.NoError(t, err)
+
+	assert.Equal(t, "test", theme.Name())
 }
