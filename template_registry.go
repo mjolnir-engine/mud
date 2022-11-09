@@ -17,7 +17,10 @@
 
 package mud
 
-import "github.com/rs/zerolog"
+import (
+	"github.com/mjolnir-engine/mud/errors"
+	"github.com/rs/zerolog"
+)
 
 type templateRegistry struct {
 	templates map[string]Template
@@ -33,29 +36,29 @@ func newTemplateRegistry(m *Mud) *templateRegistry {
 	}
 }
 
-//
-//func (r *templateRegistry) register(t Template) {
-//	r.logger.Info().Str("template", t.Name()).Msg("registering template")
-//	r.templates[t.Name()] = t
-//}
-//
-//func (r *templateRegistry) get(name string) (Template, error) {
-//	t, ok := r.templates[name]
-//
-//	if !ok {
-//		return nil, errors.TemplateNotFoundError{
-//			Name: name,
-//		}
-//	}
-//
-//	return t, nil
-//}
-//
-//// RegisterTemplate registers a template with the template registry. If a template with the same name already exists, it
-//// will be overwritten.
-//func (m *Mud) RegisterTemplate(t Template) {
-//	m.templateRegistry.register(t)
-//}
+func (r *templateRegistry) register(t Template) {
+	r.logger.Info().Str("template", t.Name()).Msg("registering template")
+	r.templates[t.Name()] = t
+}
+
+func (r *templateRegistry) get(name string) (Template, error) {
+	t, ok := r.templates[name]
+
+	if !ok {
+		return nil, errors.TemplateNotFoundError{
+			Name: name,
+		}
+	}
+
+	return t, nil
+}
+
+// RegisterTemplate registers a template with the template registry. If a template with the same name already exists, it
+// will be overwritten.
+func (m *Mud) RegisterTemplate(t Template) {
+	m.templateRegistry.register(t)
+}
+
 //
 //func (m *Mud) RenderTemplate(name string, data interface{}) (string, error) {
 //	template, err := m.templateRegistry.get(name)
