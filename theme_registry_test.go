@@ -46,3 +46,17 @@ func TestMud_RegisterThemeAndGetTheme(t *testing.T) {
 
 	assert.Equal(t, "test", theme.Name())
 }
+
+func TestMud_RenderWithTheme(t *testing.T) {
+	m, e := testSetup(t, func(m *Mud, e *engine.Engine) {
+		m.RegisterTheme(&testTheme{})
+		m.RegisterTemplate(&testTemplate{})
+	})
+	defer e.Stop()
+
+	result, err := m.RenderWithTheme("test", "test", nil)
+
+	assert.NoError(t, err)
+
+	assert.Equal(t, "This is a test", result)
+}

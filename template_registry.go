@@ -59,22 +59,17 @@ func (m *Mud) RegisterTemplate(t Template) {
 	m.templateRegistry.register(t)
 }
 
-//
-//func (m *Mud) RenderTemplate(name string, data interface{}) (string, error) {
+// GetTemplate returns a template from the template registry. If the template does not exist, an error will be returned.
+func (m *Mud) GetTemplate(name string) (Template, error) {
+	return m.templateRegistry.get(name)
+}
+
+//func (m *Mud) RenderTemplate(name string, session engine.Session, data interface{}) (string, error) {
 //	template, err := m.templateRegistry.get(name)
 //
 //	if err != nil {
 //		return "", err
 //	}
-//
-//	th, err := theme_registry.GetTheme("default")
-//
-//	if err != nil {
-//		return "", err
-//	}
-//
-//	style := th.GetStyleFor(t.Style())
-//	text, err := t.Render(data)
 //
 //	if err != nil {
 //		return "", err

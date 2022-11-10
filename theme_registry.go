@@ -64,3 +64,28 @@ func (m *Mud) RegisterTheme(theme Theme) {
 func (m *Mud) GetTheme(name string) (Theme, error) {
 	return m.themeRegistry.get(name)
 }
+
+// RenderWithTheme renders a template with a theme. If the theme does not exist, an error is returned.
+func (m *Mud) RenderWithTheme(theme string, template string, ctx interface{}) (string, error) {
+	t, err := m.GetTheme(theme)
+
+	if err != nil {
+		return "", err
+	}
+
+	tem, err := m.GetTemplate(template)
+
+	if err != nil {
+		return "", err
+	}
+
+	style := t.GetStyle(tem.Style())
+
+	content, err := tem.Render(ctx)
+
+	if err != nil {
+		return "", err
+	}
+
+	return style.Render(content), nil
+}

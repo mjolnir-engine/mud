@@ -23,23 +23,23 @@ import (
 	"testing"
 )
 
-type TestTemplate struct{}
+type testTemplate struct{}
 
-func (t *TestTemplate) Name() string {
+func (t *testTemplate) Name() string {
 	return "test"
 }
 
-func (t *TestTemplate) Style() string {
+func (t *testTemplate) Style() string {
 	return "test"
 }
 
-func (t *TestTemplate) Render(ctx interface{}) (string, error) {
-	return "", nil
+func (t *testTemplate) Render(ctx interface{}) (string, error) {
+	return "This is a test", nil
 }
 
 func TestMud_RegisterTemplate(t *testing.T) {
 	m, _ := testSetup(t, func(m *Mud, _ *engine.Engine) {
-		m.RegisterTemplate(&TestTemplate{})
+		m.RegisterTemplate(&testTemplate{})
 	})
 
 	assert.Len(t, m.templateRegistry.templates, 1)
