@@ -58,3 +58,32 @@ func TestTelnetPortal_CreatesListener(t *testing.T) {
 
 	assert.True(t, <-connected)
 }
+
+func TestTelnetPortal_SendsDataToSession(t *testing.T) {
+	_, e := testSetup(t, func(m *Mud, e *engine.Engine) {
+	})
+
+	defer e.Stop()
+
+	controller, err := e.GetController("test")
+
+	assert.NoError(t, err)
+
+	con, err := net.Dial("tcp", "localhost:4000")
+	defer func() { _ = con.Close() }()
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if con == nil {
+		t.Error("Connection is nil")
+	}
+
+	buf := make([]byte, 1024)
+
+	_, err = con.Read(buf)
+	_, err = con.Write([]byte("test"))
+
+	<-controller.(testController).GetSentDataChannel()
+}

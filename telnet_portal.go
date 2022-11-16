@@ -68,6 +68,15 @@ func (tc *telnetConnection) start() {
 			}
 
 			tc.logger.Debug().Msgf("read %d bytes", n)
+
+			err = tc.portal.mud.Engine.Publish(engineEvents.SessionReceiveDataEvent{
+				Id:   tc.id,
+				Data: buf[:n],
+			})
+
+			if err != nil {
+				tc.logger.Warn().Err(err).Msg("failed to publish event")
+			}
 		}
 	}()
 

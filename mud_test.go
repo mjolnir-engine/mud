@@ -23,6 +23,42 @@ import (
 	"testing"
 )
 
+type testCon struct {
+	SentDataChannel chan string
+}
+
+func (c testCon) Name() string {
+	return "test"
+}
+
+func (c testCon) Start(context *engine.ControllerContext) error {
+	return context.Engine.SendToSession(context.SessionId, []byte("Welcome to the test server!"))
+}
+
+func (c testCon) Stop(context *engine.ControllerContext) error {
+	return nil
+}
+
+func (c testCon) Resume(context *engine.ControllerContext) error {
+	return nil
+}
+
+func (c testCon) HandleInput(context *engine.ControllerContext, input string) error {
+	go func() {
+		c.SentDataChannel <- input
+	}()
+
+	return nil
+}
+
+func (c testCon) GetSentDataChannel() chan string {
+	return c.SentDataChannel
+}
+
+type testController interface {
+	GetSentDataChannel() chan string
+}
+
 func testSetup(t *testing.T, cb func(m *Mud, e *engine.Engine)) (*Mud, *engine.Engine) {
 	var m *Mud
 
@@ -35,6 +71,9 @@ func testSetup(t *testing.T, cb func(m *Mud, e *engine.Engine)) (*Mud, *engine.E
 		})
 
 		e.RegisterPlugin(m)
+		e.RegisterController(&testCon{
+			SentDataChannel: make(chan string),
+		})
 
 		cb(m, e)
 	}, "telnet")
