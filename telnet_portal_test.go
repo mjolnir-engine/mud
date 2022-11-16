@@ -72,6 +72,22 @@ func TestTelnetPortal_SendsDataToSession(t *testing.T) {
 	con, err := net.Dial("tcp", "localhost:4000")
 	defer func() { _ = con.Close() }()
 
+	assert.Equal(t, "Welcome to the test server!", <-controller.(testController).GetSentDataChannel())
+}
+
+func TestTelnetPortal_ConnectionCanReceiveData(t *testing.T) {
+	_, e := testSetup(t, func(m *Mud, e *engine.Engine) {
+	})
+
+	defer e.Stop()
+
+	controller, err := e.GetController("test")
+
+	assert.NoError(t, err)
+
+	con, err := net.Dial("tcp", "localhost:4000")
+	defer func() { _ = con.Close() }()
+
 	if err != nil {
 		t.Error(err)
 	}
@@ -82,8 +98,11 @@ func TestTelnetPortal_SendsDataToSession(t *testing.T) {
 
 	buf := make([]byte, 1024)
 
-	_, err = con.Read(buf)
 	_, err = con.Write([]byte("test"))
 
 	<-controller.(testController).GetSentDataChannel()
+
+	n, err := con.Read(buf)
+
+	assert.Equal(t, "Mjolnir MUD Engine\r\n", string(buf[:n]))
 }

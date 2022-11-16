@@ -19,6 +19,7 @@ package mud
 
 import (
 	"fmt"
+	"github.com/mjolnir-engine/engine"
 	engineEvents "github.com/mjolnir-engine/engine/events"
 	"github.com/mjolnir-engine/engine/uid"
 	"github.com/rs/zerolog"
@@ -31,10 +32,11 @@ type TelnetConfiguration struct {
 }
 
 type telnetConnection struct {
-	id     uid.UID
-	logger zerolog.Logger
-	conn   net.Conn
-	portal *telnetPortal
+	id                            uid.UID
+	logger                        zerolog.Logger
+	conn                          net.Conn
+	portal                        *telnetPortal
+	handleReceiveDataSubscription uid.UID
 }
 
 func newTelnetConnection(p *telnetPortal, conn net.Conn) *telnetConnection {
@@ -69,7 +71,7 @@ func (tc *telnetConnection) start() {
 
 			tc.logger.Debug().Msgf("read %d bytes", n)
 
-			err = tc.portal.mud.Engine.Publish(engineEvents.SessionReceiveDataEvent{
+			err = tc.portal.mud.Engine.Publish(engineEvents.SessionSendDataEvent{
 				Id:   tc.id,
 				Data: buf[:n],
 			})
@@ -79,6 +81,8 @@ func (tc *telnetConnection) start() {
 			}
 		}
 	}()
+
+	tc.handleReceiveDataSubscription = tc.portal.mud.Engine.Subscribe(engineEvents.SessionReceiveDataEvent{}, tc.handleReceiveData)
 
 	err = tc.portal.mud.Engine.Publish(engineEvents.SessionStartEvent{
 		Id: tc.id,
@@ -92,6 +96,25 @@ func (tc *telnetConnection) start() {
 
 func (tc *telnetConnection) stop() {
 	tc.logger.Info().Msg("stopping")
+}
+
+func (tc *telnetConnection) handleReceiveData(event engine.EventMessage) {
+	e := engineEvents.SessionReceiveDataEvent{}
+
+	err := event.Unmarshal(&e)
+
+	if err != nil {
+		tc.logger.Warn().Err(err).Msg("failed to unmarshal event")
+		panic(err)
+	}
+
+	_, err = tc.conn.Write(e.Data)
+
+	if err != nil {
+		tc.logger.Warn().Err(err).Msg("failed to write to connection")
+		tc.stop()
+	}
+
 }
 
 type telnetPortal struct {
